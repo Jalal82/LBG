@@ -209,15 +209,13 @@ public:
             for (int col = 0; col < _w; col++)
             {
                 uint8_t byte = 0;
-                for (int row = 0; row < _h; row++)
+                for (int row = 0; row < 8; row++)
                 {
-                    byte |= (grid[row][col] << (7 - (row % 8)));
-                    if ((row + 1) % 8 == 0)
-                    {
-                        output_matrix += std::to_string(byte);
-                        byte = 0;
-                    }
+                    byte |= (grid[col][row] << (7 - (row)));
                 }
+                output_matrix += std::to_string(byte);
+                output_matrix += ',';
+                byte = 0;
             }
             output_matrix += "};";
         }

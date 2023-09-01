@@ -2,20 +2,20 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: gcc.exe build active file",
+            "label": "C/C++: g++.exe build active file",
             "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "-lSDL2",
+                 "-lSDL2",
                 "-lSDL2_ttf",
-                "-lSDL2_gfx"
+                "-lSDL2_gfx",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "C:\\msys64\\mingw64\\bin"
             },
             "problemMatcher": [
                 "$gcc"
