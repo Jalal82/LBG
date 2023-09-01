@@ -39,7 +39,7 @@ jobs:
 
     - name: Build Project
       run: |
-        g++ main.cpp -o bitmap_to_hex.exe -lSDL2 -lSDL2_ttf -lSDL2_gfx
+        g++ main.cpp -o bitmap_to_hex.exe -lSDL2 -lSDL2_ttf -lSDL2_gfx -lX11
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
