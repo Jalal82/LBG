@@ -20,10 +20,11 @@ pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_ttf
 
 ## Usage
 
-To compile and run the code, you can use the following commands:
+To compile and run the code in windows, you can use the following commands:
 g++ main.cpp -o bitmap_to_hex.exe -lSDL2 -lSDL2_ttf -lSDL2_gfx
+add -lX11 for linux
 
-output: bitmap_to_hex.exe
+output: bitmap_to_hex
 
 ## Contributing
 
