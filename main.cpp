@@ -174,18 +174,21 @@ public:
             CloseClipboard();
         }
 #else
-       // Linux clipboard code using X11
-        Display* display = XOpenDisplay(nullptr);
-        if (display) {
+        // Linux clipboard code using X11
+        Display *display = XOpenDisplay(nullptr);
+        if (display)
+        {
             Window clipboardOwner = XGetSelectionOwner(display, XA_PRIMARY);
-            if (clipboardOwner == None) {
+            if (clipboardOwner == None)
+            {
                 clipboardOwner = DefaultRootWindow(display);
             }
 
             Atom utf8String = XInternAtom(display, "UTF8_STRING", False);
 
             XSetSelectionOwner(display, XA_PRIMARY, clipboardOwner, CurrentTime);
-            if (XGetSelectionOwner(display, XA_PRIMARY) == clipboardOwner) {
+            if (XGetSelectionOwner(display, XA_PRIMARY) == clipboardOwner)
+            {
                 XSetSelectionOwner(display, utf8String, clipboardOwner, CurrentTime);
                 XStoreBytes(display, text.c_str(), text.length());
             }
@@ -313,9 +316,14 @@ public:
     }
 };
 
+#ifdef _WIN32
 int WinMain()
-{
 
+#else
+int WinMain()
+
+#endif
+{
     Uint32 frameStart;
     int frameTime;
     const int FPS = 15;
