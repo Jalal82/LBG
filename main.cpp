@@ -320,7 +320,7 @@ public:
 int WinMain()
 
 #else
-int WinMain()
+int main()
 
 #endif
 {
