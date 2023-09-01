@@ -4,7 +4,12 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <vector>
+
+#ifdef _WIN32
 #include <Windows.h>
+#endif
+
+
 
 class Grid
 {
