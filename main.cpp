@@ -9,8 +9,6 @@
 #include <Windows.h>
 #endif
 
-
-
 class Grid
 {
 private:
@@ -154,10 +152,11 @@ public:
 
     void copyToClipboard(const std::string &text)
     {
+#ifdef _WIN32
+        // Windows-specific clipboard code here
         if (OpenClipboard(nullptr))
         {
             EmptyClipboard();
-
             HGLOBAL hClipboardData = GlobalAlloc(GMEM_DDESHARE, text.size() + 1);
             if (hClipboardData)
             {
@@ -169,9 +168,31 @@ public:
                     SetClipboardData(CF_TEXT, hClipboardData);
                 }
             }
-
             CloseClipboard();
         }
+#else
+        // Linux clipboard code using X11
+        Display *display = XOpenDisplay(nullptr);
+        if (display)
+        {
+            Window clipboardOwner = XGetSelectionOwner(display, XA_CLIPBOARD);
+            if (clipboardOwner == None)
+            {
+                clipboardOwner = DefaultRootWindow(display);
+            }
+
+            Atom utf8String = XInternAtom(display, "UTF8_STRING", False);
+
+            XSetSelectionOwner(display, XA_CLIPBOARD, clipboardOwner, CurrentTime);
+            if (XGetSelectionOwner(display, XA_CLIPBOARD) == clipboardOwner)
+            {
+                XSetSelectionOwner(display, utf8String, clipboardOwner, CurrentTime);
+                XStoreBytes(display, text.c_str(), text.length());
+            }
+
+            XCloseDisplay(display);
+        }
+#endif
     }
 
     void renderGrid()
