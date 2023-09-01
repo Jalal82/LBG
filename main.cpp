@@ -3,13 +3,14 @@
 #include <cstring>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include <vector>
 #include <Windows.h>
 
 class Grid
 {
 private:
     int SCREEN_WIDTH, SCREEN_HEIGHT;
-    int _w, _h;
+    int _w, _h, _mode;
 
     struct Button
     {
@@ -44,10 +45,11 @@ public:
 
     uint16_t width_offset = 0;
     uint16_t height_offset = 0;
-    Grid(int h, int w)
+    Grid(int h, int w, int mode)
     {
         _w = w;
         _h = h;
+        _mode = mode;
         SCREEN_WIDTH = cell_size * w;
         SCREEN_HEIGHT = cell_size * h;
         width_offset = 35 * _w;
@@ -195,10 +197,31 @@ public:
                     SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE); // Green color for clicked cells
                     SDL_RenderFillRect(renderer, &cellRect);
                 }
-                output_matrix += (grid[x][y]) ? "0x80," : "0x00,";
+                if (_mode == 1)
+                    output_matrix += (grid[x][y]) ? "0x80," : "0x00,";
             }
         }
-        output_matrix += "};";
+        if (_mode == 1)
+            output_matrix += "};";
+
+        if (_mode == 2)
+        {
+            for (int col = 0; col < _w; col++)
+            {
+                uint8_t byte = 0;
+                for (int row = 0; row < _h; row++)
+                {
+                    byte |= (grid[row][col] << (7 - (row % 8)));
+                    if ((row + 1) % 8 == 0)
+                    {
+                        output_matrix += std::to_string(byte);
+                        byte = 0;
+                    }
+                }
+            }
+            output_matrix += "};";
+        }
+
         render_out_matrix();
 
         // Render Btn
@@ -214,7 +237,7 @@ public:
             {
                 quit = true;
             }
-            else if (event.type == SDL_MOUSEBUTTONDOWN  )
+            else if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 int mouseX, mouseY;
                 SDL_GetMouseState(&mouseX, &mouseY);
@@ -235,7 +258,7 @@ public:
                     std::cout << "Bitmap copied to Clipboard!" << std::endl;
                 }
             }
-            else if ( event.type == SDL_MOUSEMOTION && event.motion.state & SDL_BUTTON(SDL_BUTTON_LEFT))
+            else if (event.type == SDL_MOUSEMOTION && event.motion.state & SDL_BUTTON(SDL_BUTTON_LEFT))
             {
                 int mouseX, mouseY;
                 SDL_GetMouseState(&mouseX, &mouseY);
@@ -248,8 +271,6 @@ public:
                     grid[clickedX][clickedY] = true; // Toggle clicked cell
                     // std::cout << "Clicked cell: (" << clickedX << ", " << clickedY << ")" << std::endl;
                 }
-
-              
             }
             else if (event.type == SDL_KEYDOWN)
             {
@@ -275,30 +296,66 @@ int WinMain()
     int frameTime;
     const int FPS = 15;
 
-    int terminal_width = 80;  // desired width
-    int terminal_height = 30; // desired height
+    int terminal_width = 100; // desired width
+    int terminal_height = 18; // desired height
 
     std::string command = "mode con: cols=" + std::to_string(terminal_width) + " lines=" + std::to_string(terminal_height);
     system(command.c_str());
 
     int width, height;
+    int mode = 1;
 
-    std::cout << "Press 's' to erase the grid." << std::endl;
-    std::cout << "Enter the height: ";
-    std::cin >> height;
-    std::cout << "Enter the width: ";
-    std::cin >> width;
+    std::cout << "[HINT]: Press 's' to erase the grid." << std::endl;
+    std::cout << "Select the ouput mode, 1 for buffer (1 Pixel in byte) and 2 for row-wise writing (8 Pixel in byte)" << std::endl;
+    std::cout << "Enter the mode: ";
+    std::cin >> mode;
 
-    while (width <= 2 || height <= 2)
+    while (mode < 1 || mode > 2)
     {
-        std::cout << "Error: Width and height must be greater than 2." << std::endl;
+        std::cout << "Error: mode must be equal to 1 or 2." << std::endl;
+        std::cout << "Select the ouput mode, 1 for buffer (1 Pixel in byte) and 2 for row-wise writing (8 Pixel in byte)" << std::endl;
+        std::cout << "Enter the mode: ";
+        std::cin >> mode;
+    }
+
+    // Buffer mode 1 ==> Pixel in byte
+    if (mode == 1)
+    {
         std::cout << "Enter the height: ";
         std::cin >> height;
         std::cout << "Enter the width: ";
         std::cin >> width;
+
+        while (width <= 2 || height <= 2)
+        {
+            std::cout << "Error: Width and height must be greater than 2." << std::endl;
+            std::cout << "Enter the height: ";
+            std::cin >> height;
+            std::cout << "Enter the width: ";
+            std::cin >> width;
+        }
+    }
+    // row-wise writing mode ==> 8 pexel in byte (row in lcd)
+    else if (mode == 2)
+    {
+        std::cout << std::endl;
+        std::cout << "[HINT]: The height should be a multiple of 8, such as 8, 16, 24, and so on." << std::endl;
+        std::cout << "Enter the height: ";
+        std::cin >> height;
+        std::cout << "Enter the width: ";
+        std::cin >> width;
+
+        while (width <= 2 || height <= 2 || height % 8 != 0)
+        {
+            std::cout << "Error: Width and height  must be greater than 2, height should be a multiple of 8." << std::endl;
+            std::cout << "Enter the height: ";
+            std::cin >> height;
+            std::cout << "Enter the width: ";
+            std::cin >> width;
+        }
     }
 
-    Grid grid(height, width);
+    Grid grid(height, width, mode);
     while (!grid.quit)
     {
         frameStart = SDL_GetTicks();
@@ -315,3 +372,5 @@ int WinMain()
 
     return 0;
 }
+// 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
+// g++ main.cpp -o bitmap_to_hex.exe -lSDL2 -lSDL2_ttf -lSDL2_gfx
